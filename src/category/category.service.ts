@@ -22,16 +22,13 @@ export class CategoryService {
 		}
 	}
 
-	findAll() {
-		return this.categoryRepository.createQueryBuilder('category').getMany();
+	async findAll() {
+		return await this.categoryRepository.find({ relations: { posts: true } });
 	}
 
 	findOne(id: number) {
 		try {
-			return this.categoryRepository
-				.createQueryBuilder('category')
-				.where('category.id = :id', { id: id })
-				.getOne();
+			return this.categoryRepository.findOne({ where: { id }, relations: { posts: true } });
 		} catch (error) {
 			throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
@@ -39,23 +36,16 @@ export class CategoryService {
 
 	async update(id: number, updateCategoryDto: UpdateCategoryDto) {
 		try {
-			return await this.categoryRepository
-				.createQueryBuilder('category')
-				.where('category.id = :id', { id: id })
-				.update(updateCategoryDto)
-				.execute();
+			return await this.categoryRepository.update({ id }, updateCategoryDto);
 		} catch (error) {
 			throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
-	remove(id: number) {
+	async remove(id: number) {
 		try {
-			return this.categoryRepository
-				.createQueryBuilder('category')
-				.where('category.id = :id', { id: id })
-				.delete()
-				.execute();
+			const category: Category = await this.findOne(id);
+			return await this.categoryRepository.remove(category);
 		} catch (error) {
 			throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
