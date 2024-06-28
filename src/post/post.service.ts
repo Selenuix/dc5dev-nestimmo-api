@@ -13,9 +13,8 @@ export class PostService {
 	) {}
 
 	async create(createPostDto: CreatePostDto) {
-		console.log(createPostDto);
 		try {
-			const post = this.postRepository.create(createPostDto);
+			const post: PostEntity = this.postRepository.create(createPostDto);
 			return await this.postRepository.save(post);
 		} catch (error) {
 			throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);

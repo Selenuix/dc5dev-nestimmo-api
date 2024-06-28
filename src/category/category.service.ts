@@ -13,7 +13,6 @@ export class CategoryService {
 	) {}
 
 	create(createCategoryDto: CreateCategoryDto) {
-		console.log(createCategoryDto);
 		try {
 			const category = this.categoryRepository.create(createCategoryDto);
 			return this.categoryRepository.save(category);
