@@ -7,32 +7,31 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class PostService {
-	// importer repository and PostEntity
 	constructor(
 		@InjectRepository(PostEntity)
 		private readonly postRepository: Repository<PostEntity>,
 	) {}
 
-	create(createPostDto: CreatePostDto) {
+	async create(createPostDto: CreatePostDto) {
 		console.log(createPostDto);
 		try {
 			const post = this.postRepository.create(createPostDto);
-			return this.postRepository.save(post);
+			return await this.postRepository.save(post);
 		} catch (error) {
 			throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
-	findAll() {
-		return this.postRepository.createQueryBuilder('post').getMany();
+	async findAll() {
+		return await this.postRepository.find({ relations: { category: true } });
 	}
 
-	findOne(id: number) {
+	async findOne(id: number) {
 		try {
-			return this.postRepository
-				.createQueryBuilder('post')
-				.where('post.id = :id', { id: id })
-				.getOne();
+			return await this.postRepository.findOne({
+				where: { id },
+				relations: { category: true },
+			});
 		} catch (error) {
 			throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
@@ -40,23 +39,16 @@ export class PostService {
 
 	async update(id: number, updatePostDto: UpdatePostDto) {
 		try {
-			return await this.postRepository
-				.createQueryBuilder('post')
-				.where('post.id = :id', { id: id })
-				.update(updatePostDto)
-				.execute();
+			return await this.postRepository.update({ id }, updatePostDto);
 		} catch (error) {
 			throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
-	remove(id: number) {
+	async remove(id: number) {
 		try {
-			return this.postRepository
-				.createQueryBuilder('post')
-				.where('post.id = :id', { id: id })
-				.delete()
-				.execute();
+			const post: PostEntity = await this.findOne(id);
+			return await this.postRepository.remove(post);
 		} catch (error) {
 			throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
